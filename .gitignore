@@ -6,3 +6,8 @@ venv/
 .DS_Store
 bench/results/
 *.egg-info/
+
+# eval run artifacts (reproducible, not source)
+bench/**/transcripts/
+bench/**/grades/
+bench/**/_run_input.jsonl

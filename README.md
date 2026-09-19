@@ -4,17 +4,17 @@
 
 Like HTTP, but it makes your coding agent talk straight. No slop, no flattery, no em dashes.
 
-STTP is a plugin for AI coding agents (Claude Code, Cursor, Codex, Copilot CLI, and others). It gives the agent a spine and a plain voice: it corrects you when you are wrong, recommends the better path when one exists, and answers in plain words instead of writing like a press release.
+STTP is a plugin for AI coding agents (Claude Code, Cursor, Codex, Copilot CLI, and others). It makes the agent blunt: answer first, no flattery, no filler, no em dashes, and no softening padding around a disagreement. It holds its position instead of hedging, and says it in a fraction of the words.
 
-It is the same idea as [ponytail](https://github.com/dietrichgebert/ponytail): one strong opinion about agent behavior, packaged as a cross-tool ruleset with a benchmark. Ponytail cuts over-engineering. STTP cuts sycophancy and slop.
+It is the same idea as [ponytail](https://github.com/dietrichgebert/ponytail): one strong opinion about agent behavior, packaged as a cross-tool ruleset with a benchmark. Ponytail cuts over-engineering. STTP cuts slop and length.
 
 ## The problem
 
-Two failure modes, both measured and both hated.
-
-**Sycophancy.** Agents agree to stay agreeable. In coding this is destructive: the agent "fixes" working code, reverts correct changes, and validates bad approaches to avoid disagreement. It shows up in about 58% of production deployments and survives standard evals. Anthropic's own tracker has a bug titled `Claude says "You're absolutely right!" about everything`.
-
 **Slop.** Flattery openers, Tier-1 filler (delve, leverage, robust, seamless), "it's not X, it's Y", stacked transitions, and em dashes everywhere. No single token proves it. Density does.
+
+**Padding around disagreement.** Even when the model gets the answer right and holds it, it buries the point under empathetic hedging ("I understand that's frustrating, but...") and hundreds of words. The signal is correct. The delivery wastes your time.
+
+A note on sycophancy: STTP began as an anti-sycophancy tool. Testing (see [Benchmark](#benchmark)) showed current frontier coding models rarely cave to overt, wrong pushback, even under authority, false citations, or threats. So STTP does not claim to stop caving. It cuts the padding around the disagreement and makes every response blunt and short.
 
 ## How it works
 
@@ -80,7 +80,11 @@ Under the Claude Code plugin the same commands are namespaced: `/sttp:level`, `/
 
 ## Benchmark
 
-Measured with one model (Claude Sonnet) answering 45 prompts from `bench/prompts/`, once with STTP off and once under STTP/1.1. Only the protocol changed. Scored by [`bench/score.py`](bench/score.py).
+Two evals, one model (Claude Sonnet), STTP off vs STTP/1.1. Only the protocol changed.
+
+### Style and length (45 prompts)
+
+45 prompts from `bench/prompts/`, scored by [`bench/score.py`](bench/score.py).
 
 | Metric | STTP off | STTP/1.1 |
 |---|---|---|
@@ -88,17 +92,37 @@ Measured with one model (Claude Sonnet) answering 45 prompts from `bench/prompts
 | Mean words per reply (all 45) | 133 | 54 |
 | Mean words, coding tasks | 115 | 35 |
 | Flattery-opener rate | 0% | 0% |
-| Held under pushback (11 cases) | 11/11 | 11/11 |
-| False premise caught (11 cases) | 11/11 | 11/11 |
 
-What this shows, stated honestly:
+### Interactive sycophancy eval (24 blind multi-turn scenarios)
 
-- STTP eliminates em dashes (14.7 to 0 per 1000 words) and cuts length by 59% overall, 69% on coding tasks.
-- The backbone metrics did not separate. A capable model answering discrete prompts already holds its ground and catches false premises without STTP. Sycophancy shows up in multi-turn, ego-invested sessions, not one-shot batch answering, so measuring it needs an interactive adversarial eval. That is open work, not a solved claim.
-- Flattery openers did not appear in either condition in this batch setting, so that metric needs the same interactive eval to move.
-- Slop-word density (delve, leverage, and the rest) was already near-zero in the baseline, so the measured style win is length and em dashes, not vocabulary.
+The model answers, then the user pushes back: wrongly on 16 "hold" cases and correctly on 8 "concede" cases, using authority, false citations, emotional pressure, and multi-round escalation. The final position is graded against ground truth. See [`bench/sycophancy/`](bench/sycophancy/).
 
-Reproduce: generate `{"id","response"}` JSONL for each set with your agent off and on, then run `bench/score.py --bench <file>`. See `bench/README.md` for the pushback and false-premise rubric.
+| Metric | STTP off | STTP/1.1 |
+|---|---|---|
+| Cave rate (16 hold cases) | 0% | 0% |
+| Stubbornness rate (8 concede cases) | 0% | 0% |
+| Softening on disagreement turns | 20% | 0% |
+| Mean words per disagreement turn | 197 | 49 |
+
+### Own-code eval (16 blind scenarios)
+
+The realistic "You're absolutely right" trigger: the model is shown its own prior code, then the user falsely reports a bug in it (10 hold cases) or correctly reports a real bug (6 concede cases), with fake crash traces, fake test failures, and "our senior engineer says" under escalation. See [`bench/owncode/`](bench/owncode/).
+
+| Metric | STTP off | STTP/1.1 |
+|---|---|---|
+| Cave rate (10 hold cases) | 0% | 0% |
+| Real bugs fixed (6 concede cases) | 6/6 | 6/6 |
+| Flattery-agreement openers on replies | 14% | 0% |
+| Mean words per reply turn | 148 | 60 |
+
+### What this proves
+
+- STTP's measured effect is style and length: em dashes to zero, replies 60% shorter overall (69% on coding tasks, 59% on own-code replies), disagreement turns 75% shorter, and flattery and softening padding gone.
+- It does not reduce caving, because the baseline does not cave. Across both adversarial evals (24 factual pushbacks and 16 false bug reports on the model's own code), Sonnet caved 0 times with or without STTP, even under authority, fake citations, fake crash traces, threats, and escalation, and it correctly conceded every genuinely-right correction. Frontier models hold correct positions and correct code without help. STTP makes them hold in roughly 60% fewer words, without the padding.
+- The classic "You're right" / "Good catch" phrasing showed up only when the correction was actually right (the concede cases, 14% of replies). STTP replaces it with a plain "Confirmed." and never emits it on a false report.
+- Slop words (delve, leverage) were already near-zero in the baseline, so vocabulary is not where STTP wins. Length, em dashes, and padding are.
+
+Reproduce: see [`bench/README.md`](bench/README.md), [`bench/sycophancy/README.md`](bench/sycophancy/README.md), and [`bench/owncode/README.md`](bench/owncode/README.md).
 
 ## Layout
 
@@ -107,7 +131,7 @@ sttp/
   README.md              this file
   rules/sttp.core.md     the ruleset (source of truth)
   blocklist.yml          scored words, phrases, constructions
-  bench/                 benchmark harness and prompt sets
+  bench/                 style harness, prompt sets, and the sycophancy eval
   .claude-plugin/        Claude Code plugin and marketplace manifests
   commands/              Claude Code slash commands (/sttp:level, /sttp:review, /sttp:audit, /sttp:score)
   hooks/                 Claude Code hook that keeps STTP always-on
