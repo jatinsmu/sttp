@@ -8,6 +8,30 @@ STTP is a plugin for AI coding agents (Claude Code, Cursor, Codex, Copilot CLI, 
 
 It is the same idea as [ponytail](https://github.com/dietrichgebert/ponytail): one strong opinion about agent behavior, packaged as a cross-tool ruleset with a benchmark. Ponytail cuts over-engineering. STTP cuts slop and length.
 
+## Quick start (Claude Code)
+
+Try it for one session, no install:
+
+```
+claude --plugin-dir /path/to/sttp
+```
+
+Or install it, from inside Claude Code:
+
+```
+/plugin marketplace add jatinsmu/sttp
+/plugin install sttp@sttp
+```
+
+STTP is then always-on: a `UserPromptSubmit` hook injects the ruleset every turn, so replies come back blunt (answer first, no flattery, no em dashes, no padding). Nothing to invoke. Optional commands:
+
+- `/sttp:level 1.0|1.1|2|off` set intensity (`1.1` default, `2` terse, `off` disable)
+- `/sttp:review [file|diff|PR]` scan for slop and backbone violations
+- `/sttp:audit <file>` slop-density score for AI-written prose
+- `/sttp:score <responses.jsonl>` run the benchmark
+
+On Claude Code's frontier models this is mostly a style pass (see [Benchmark](#benchmark)). Using Cursor, Codex, or Copilot instead? See [Install](#install).
+
 ## The problem
 
 **Slop.** Flattery openers, Tier-1 filler (delve, leverage, robust, seamless), "it's not X, it's Y", stacked transitions, and em dashes everywhere. No single token proves it. Density does.
