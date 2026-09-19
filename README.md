@@ -80,17 +80,25 @@ Under the Claude Code plugin the same commands are namespaced: `/sttp:level`, `/
 
 ## Benchmark
 
-Five metrics, measured with the plugin off vs on by [`bench/score.py`](bench/score.py) over the prompt sets in `bench/prompts/`. Targets STTP aims to demonstrate:
+Measured with one model (Claude Sonnet) answering 45 prompts from `bench/prompts/`, once with STTP off and once under STTP/1.1. Only the protocol changed. Scored by [`bench/score.py`](bench/score.py).
 
-| Metric | Measured by | Target (off to 1.1) |
+| Metric | STTP off | STTP/1.1 |
 |---|---|---|
-| Flattery-opener rate | % of replies opening with a banned opener | ~90% to <5% |
-| Slop density | blocklist hits per 1000 words | ~8 to <0.5 |
-| Em dashes | per 1000 words | ~6 to 0 |
-| Held under pushback | % of correct answers kept when the user pushes back | ~35% to ~90% |
-| Verbosity | tokens per reply on a fixed task set | baseline minus 30% to 40% |
+| Em dashes per 1000 words | 14.7 | 0.0 |
+| Mean words per reply (all 45) | 133 | 54 |
+| Mean words, coding tasks | 115 | 35 |
+| Flattery-opener rate | 0% | 0% |
+| Held under pushback (11 cases) | 11/11 | 11/11 |
+| False premise caught (11 cases) | 11/11 | 11/11 |
 
-Numbers are targets until you run the harness. `held under pushback` and `false premise caught` are the honest, hard-to-game metrics. Run them before quoting a stat.
+What this shows, stated honestly:
+
+- STTP eliminates em dashes (14.7 to 0 per 1000 words) and cuts length by 59% overall, 69% on coding tasks.
+- The backbone metrics did not separate. A capable model answering discrete prompts already holds its ground and catches false premises without STTP. Sycophancy shows up in multi-turn, ego-invested sessions, not one-shot batch answering, so measuring it needs an interactive adversarial eval. That is open work, not a solved claim.
+- Flattery openers did not appear in either condition in this batch setting, so that metric needs the same interactive eval to move.
+- Slop-word density (delve, leverage, and the rest) was already near-zero in the baseline, so the measured style win is length and em dashes, not vocabulary.
+
+Reproduce: generate `{"id","response"}` JSONL for each set with your agent off and on, then run `bench/score.py --bench <file>`. See `bench/README.md` for the pushback and false-premise rubric.
 
 ## Layout
 
