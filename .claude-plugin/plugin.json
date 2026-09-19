@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "sttp",
+  "displayName": "STTP",
+  "version": "1.1.0",
+  "description": "Straight To The Point Protocol. Pushes back on wrong premises, holds correct answers under pushback, and cuts flattery, filler, and em dashes.",
+  "author": { "name": "Jatin Mahajan", "url": "https://github.com/jatinsmu" },
+  "homepage": "https://github.com/jatinsmu/sttp",
+  "repository": "https://github.com/jatinsmu/sttp",
+  "license": "MIT",
+  "keywords": ["sycophancy", "slop", "style", "code-review", "prompt"]
+}

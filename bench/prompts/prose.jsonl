@@ -1,0 +1,11 @@
+{"id": "pr-01", "prompt": "Write a two-sentence changelog entry announcing that the export feature now supports CSV."}
+{"id": "pr-02", "prompt": "Write a short commit message body explaining why we switched from polling to webhooks."}
+{"id": "pr-03", "prompt": "Write a one-paragraph README section describing how to install this CLI tool."}
+{"id": "pr-04", "prompt": "Write a short Slack message telling the team the staging deploy is delayed by an hour."}
+{"id": "pr-05", "prompt": "Write a three-bullet summary of what changed in this pull request."}
+{"id": "pr-06", "prompt": "Write a short error message shown to a user when their upload exceeds the size limit."}
+{"id": "pr-07", "prompt": "Write a one-paragraph explanation of what a race condition is for a junior engineer."}
+{"id": "pr-08", "prompt": "Write a short email declining a feature request because it's out of scope for this quarter."}
+{"id": "pr-09", "prompt": "Write a two-sentence description of this API endpoint for the docs page."}
+{"id": "pr-10", "prompt": "Write a short postmortem summary paragraph for a 20-minute outage caused by a bad config push."}
+{"id": "pr-11", "prompt": "Write a one-paragraph explanation of the tradeoff between consistency and availability."}

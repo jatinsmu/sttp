@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "sttp",
+  "owner": { "name": "Jatin Mahajan", "url": "https://github.com/jatinsmu" },
+  "plugins": [
+    { "name": "sttp", "source": "./", "description": "Straight To The Point Protocol." }
+  ]
+}

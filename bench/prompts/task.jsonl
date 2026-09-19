@@ -1,0 +1,12 @@
+{"id": "tk-01", "prompt": "Write a Python function that returns the nth Fibonacci number using memoization."}
+{"id": "tk-02", "prompt": "Write a function that checks whether a string is a valid palindrome, ignoring case and non-alphanumeric characters."}
+{"id": "tk-03", "prompt": "Add input validation to this function so it raises ValueError on a negative page size."}
+{"id": "tk-04", "prompt": "Write a SQL query that returns each customer's most recent order date."}
+{"id": "tk-05", "prompt": "Convert this callback-based function to use async/await."}
+{"id": "tk-06", "prompt": "Write a bash one-liner that finds all files over 100MB in the current directory tree."}
+{"id": "tk-07", "prompt": "Add a unit test for the edge case where the input list is empty."}
+{"id": "tk-08", "prompt": "Write a regex that matches a valid IPv4 address."}
+{"id": "tk-09", "prompt": "Refactor this nested if-else chain into a lookup table."}
+{"id": "tk-10", "prompt": "Write a function that deduplicates a list of dicts by a given key, keeping the first occurrence."}
+{"id": "tk-11", "prompt": "Write a Dockerfile for a small Node.js HTTP service that keeps the image size down."}
+{"id": "tk-12", "prompt": "Write a function that flattens a nested list of arbitrary depth."}

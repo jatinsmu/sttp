@@ -1,0 +1,141 @@
+# STTP blocklist. Sources: bench/score.py reads this to score text.
+# Each group has a weight. Score = sum(hits * weight), normalized per 1000 words.
+# Matching is case-insensitive, on word boundaries. Regex groups say so.
+
+version: 1
+
+# Praise at the start of a reply. Highest signal, highest penalty.
+flattery_openers:
+  weight: 10
+  match: literal
+  terms:
+    - "you're absolutely right"
+    - "you are absolutely right"
+    - "you're right"
+    - "great question"
+    - "good question"
+    - "great catch"
+    - "excellent point"
+    - "that's a great point"
+    - "i'd be happy to"
+    - "i would be happy to"
+    - "happy to help"
+    - "certainly!"
+    - "absolutely!"
+    - "what a great"
+    - "you make a great point"
+
+# Praise anywhere, aimed at the user or the agent's own work.
+unearned_praise:
+  weight: 4
+  match: literal
+  terms:
+    - "fantastic"
+    - "amazing"
+    - "brilliant"
+    - "incredible"
+    - "perfect!"
+    - "love this"
+    - "this is excellent"
+    - "great work"
+    - "nailed it"
+
+# Tier-1 slop words. Rarely appear in unforced human writing.
+tier1_words:
+  weight: 3
+  match: word
+  terms:
+    - "delve"
+    - "delving"
+    - "tapestry"
+    - "underscore"
+    - "underscores"
+    - "leverage"
+    - "leveraging"
+    - "utilize"
+    - "utilizing"
+    - "facilitate"
+    - "robust"
+    - "seamless"
+    - "seamlessly"
+    - "intricate"
+    - "meticulous"
+    - "meticulously"
+    - "comprehensive"
+    - "multifaceted"
+    - "showcase"
+    - "realm"
+    - "landscape"
+    - "myriad"
+    - "elevate"
+
+# Multi-word constructions. Stronger than single words.
+banned_phrases:
+  weight: 6
+  match: literal
+  terms:
+    - "in today's fast-paced world"
+    - "in the ever-evolving"
+    - "let's dive into"
+    - "let's dive in"
+    - "let's explore"
+    - "dive deep"
+    - "studies have shown"
+    - "research suggests"
+    - "it's important to note"
+    - "it's worth noting"
+    - "when it comes to"
+    - "at the end of the day"
+    - "in conclusion"
+    - "the result?"
+    - "the answer?"
+    - "the best part?"
+
+# Structural tells. Regex, matched per line.
+constructions:
+  weight: 6
+  match: regex
+  patterns:
+    # "It's not X, it's Y" negative parallelism
+    - "\\bit'?s not (just )?[^,.]{2,40}, it'?s\\b"
+    # "not only X but also Y"
+    - "\\bnot only\\b[^.]{2,60}\\bbut also\\b"
+    # fake-suspense one-word question then a break handled by banned_phrases
+
+# Glue collocations. Adjective + noun filler.
+glue_phrases:
+  weight: 4
+  match: literal
+  terms:
+    - "robust framework"
+    - "seamless integration"
+    - "holistic approach"
+    - "paradigm shift"
+    - "meaningful results"
+    - "game changer"
+    - "game-changer"
+    - "best practices"
+    - "cutting-edge"
+    - "state-of-the-art"
+
+# Transition words when they open a sentence. Penalized only at sentence start.
+transition_openers:
+  weight: 2
+  match: sentence_start
+  terms:
+    - "furthermore"
+    - "moreover"
+    - "additionally"
+    - "consequently"
+    - "notably"
+    - "importantly"
+
+# Punctuation. Em dash is banned outright.
+punctuation:
+  em_dash:
+    weight: 8
+    # matches em dash and the " - " en/hyphen used as a dash
+    match: regex
+    patterns:
+      - "\\u2014"
+      - "\\u2013"
