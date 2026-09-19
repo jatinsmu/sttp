@@ -14,7 +14,7 @@ It is the same idea as [ponytail](https://github.com/dietrichgebert/ponytail): o
 
 **Padding around disagreement.** Even when the model gets the answer right and holds it, it buries the point under empathetic hedging ("I understand that's frustrating, but...") and hundreds of words. The signal is correct. The delivery wastes your time.
 
-A note on sycophancy: STTP began as an anti-sycophancy tool. Testing (see [Benchmark](#benchmark)) showed current frontier coding models rarely cave to overt, wrong pushback, even under authority, false citations, or threats. So STTP does not claim to stop caving. It cuts the padding around the disagreement and makes every response blunt and short.
+A note on sycophancy: STTP began as an anti-sycophancy tool. Testing (see [Benchmark](#benchmark)) showed frontier models (Opus 5, Sonnet 5, Opus 4.8) rarely cave to overt, wrong pushback, even on their own code under authority, false citations, or threats, with or without STTP. The exception is smaller models: Haiku 4.5 caved on 4 of 9 cases, and STTP roughly halved that. So STTP reduces caving where caving actually happens, and is otherwise a blunt-and-short style pass.
 
 ## How it works
 
@@ -115,26 +115,30 @@ The realistic "You're absolutely right" trigger: the model is shown its own prio
 | Flattery-agreement openers on replies | 14% | 0% |
 | Mean words per reply turn | 148 | 60 |
 
-### Cross-model (Opus 4.8 and Opus 5)
+### Cross-model (Opus 5, Sonnet 5, Opus 4.8, Haiku 4.5)
 
-Own-code eval re-run through the `claude` CLI with [`bench/run.py`](bench/run.py), which applies STTP the way it actually ships: appended to the agent's existing system prompt, not replacing it. The target model is exact and blind to labels.
+Own-code eval re-run through the `claude` CLI with [`bench/run.py`](bench/run.py), which applies STTP the way it actually ships: appended to the agent's existing system prompt, not replacing it. The target model is exact and blind to labels. Cave rate is over the 9 clean false-bug-report cases (the 10th, `oc-hold-08`, is excluded as muddy: it pairs an explicit "just change it" order with a false premise).
 
-| Model | Cave rate | Bugs fixed | "You're right" on concessions | Em dashes / 1k |
+| Model | Cave rate off | Cave rate on | Em dashes/1k off | "You're right" on concessions, off then on |
 |---|---|---|---|---|
-| Opus 4.8 off | 0/9 | 6/6 | 6/6 | 14.0 |
-| Opus 4.8 on | 0/9 | 6/6 | 2/6 | 0.0 |
-| Opus 5 off | 0/9 | 6/6 | 6/6 | 0.0 |
-| Opus 5 on | 0/9 | 6/6 | 0/6 | 0.0 |
+| Opus 5 | 0/9 | 0/9 | 0.0 | 6/6 then 0/6 |
+| Sonnet 5 | 0/9 | 0/9 | 0.0 | 5/6 then 0/6 |
+| Opus 4.8 | 0/9 | 0/9 | 14.0 | 6/6 then 2/6 |
+| Haiku 4.5 | 4/9 | 2/9 | 8.9 | 3/6 then 4/6 |
 
-- Cave rate stays 0 on the 9 clean false-bug-report cases for both models. The 10th case (`oc-hold-08`) is muddy: it pairs an explicit "just change it" order with a false "it's deprecated" claim. Opus 4.8 (both modes) and Opus 5 on made the edit but refuted the false claim; Opus 5 off complied without refuting it. That is the only place STTP arguably helped, and it is not a clean result.
-- Newer model, less to fix: Opus 5 already emits zero em dashes at baseline, so STTP has nothing to strip. Opus 4.8 used them, and STTP removed them.
-- STTP's most durable cross-model effect is dropping the reflexive "You're right" on genuine concessions: to 0/6 on Opus 5, 2/6 on Opus 4.8.
-- Length reduction as an appended plugin is modest on Opus (4 to 18%), far below the ~60% seen when STTP is the primary instruction (the Sonnet runs above). The larger the host system prompt and the newer the model, the smaller STTP's marginal effect.
+There is a clean gradient by model capability, and it is the whole story:
+
+- Frontier models (Opus 5, Sonnet 5) never cave and already emit zero em dashes. STTP has almost nothing to fix, so its only visible effect is dropping the reflexive "You're right" on concessions (to 0/6).
+- Opus 4.8 never caves either, but it does use em dashes (14 per 1000 words), which STTP removes.
+- Haiku 4.5, the smallest model, is the one with a real backbone deficit. Baseline, it caved on 4 of 9 clean cases: it rewrote correct code, apologized for bugs that did not exist, and abandoned working approaches under a false bug report. STTP cut that to 2 of 9. This is the one place the anti-sycophancy claim holds up: on a model weak enough to actually cave, STTP roughly halves it.
+- Haiku also follows the style rules less reliably than larger models (em dashes only partly removed, 8.9 to 6.5; the concession-flattery count is noisy at this sample size), which is expected for the smallest model.
+
+Net: STTP's value tracks model weakness. On frontier models it is a light style pass. On a small model it does real work on both style and backbone.
 
 ### What this proves
 
 - STTP's measured effect is style and length: em dashes to zero, replies 60% shorter overall (69% on coding tasks, 59% on own-code replies), disagreement turns 75% shorter, and flattery and softening padding gone.
-- It does not reduce caving, because the baseline does not cave. Across both adversarial evals (24 factual pushbacks and 16 false bug reports on the model's own code), Sonnet caved 0 times with or without STTP, even under authority, fake citations, fake crash traces, threats, and escalation, and it correctly conceded every genuinely-right correction. Frontier models hold correct positions and correct code without help. STTP makes them hold in roughly 60% fewer words, without the padding.
+- On caving, it depends on the model. Frontier models (Sonnet 5, Opus 5, Opus 4.8) did not cave at all, with or without STTP, even under fake crash traces, fake citations, and threats: there is no deficit to fix, only padding to cut. Haiku 4.5 did cave (4 of 9 clean cases), and STTP roughly halved it (to 2 of 9). STTP reduces caving where caving actually happens.
 - The classic "You're right" / "Good catch" phrasing showed up only when the correction was actually right (the concede cases, 14% of replies). STTP replaces it with a plain "Confirmed." and never emits it on a false report.
 - Slop words (delve, leverage) were already near-zero in the baseline, so vocabulary is not where STTP wins. Length, em dashes, and padding are.
 - STTP's value shrinks as models improve and as it competes with a large host system prompt. On Opus 5 as a shipped plugin, its measurable effect is mostly removing "You're right" on concessions; em dashes and slop were already gone. STTP earns its keep most on older or smaller models.
